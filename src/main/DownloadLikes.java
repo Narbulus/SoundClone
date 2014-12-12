@@ -5,18 +5,28 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Scanner;
 import java.util.concurrent.ForkJoinPool;
+import java.awt.image.BufferedImage;
 import java.io.*;
 import java.lang.reflect.Type;
 import java.net.URL;
+import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
+
+import javax.imageio.ImageIO;
 
 import GsonObjects.*;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import com.mpatric.mp3agic.ByteBufferUtils;
+import com.mpatric.mp3agic.ID3v2;
+import com.mpatric.mp3agic.ID3v24Tag;
+import com.mpatric.mp3agic.Mp3File;
 
 public class DownloadLikes {
+	
+	private static final int BUFFER_SIZE = 2097152;
 
 	@SuppressWarnings("unchecked")
 	public static void main(String[] args) throws Exception {
@@ -56,10 +66,48 @@ public class DownloadLikes {
 					ReadableByteChannel rbc = Channels.newChannel(website.openStream());
 					String fuzzTitle = t.getTitle();
 					fuzzTitle = fuzzTitle.replaceAll("[<>?*:|/\\\\]", " ");
-					fuzzTitle.replaceAll("\"", "'");
-					FileOutputStream fos = new FileOutputStream(downloadPath + "\\" + fuzzTitle + ".mp3");
+					fuzzTitle = fuzzTitle.replaceAll("\"", "'");
+					String tempPath = downloadPath + "\\%" + fuzzTitle + ".mp3";
+					String finalPath = downloadPath + "\\" + fuzzTitle + ".mp3";
+					FileOutputStream fos = new FileOutputStream(tempPath);
 					fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
 					fos.close();
+					
+					File f = new File(tempPath);
+					
+					if (t.getArtworkURL() != null) {
+						URL artworkURL = new URL(t.getArtworkURL().replace("large", "t500x500"));
+						
+						BufferedImage image = ImageIO.read(artworkURL.openStream());
+						ByteArrayOutputStream out = new ByteArrayOutputStream();
+						ImageIO.write(image, "jpg", out);
+						out.flush();
+						byte[] bytes = out.toByteArray();
+						out.close();
+						
+						OutputStream outs = new FileOutputStream(fuzzTitle + ".jpg");
+						outs.write(bytes);
+						outs.flush();
+						outs.close();
+						
+						Mp3File mp3file = new Mp3File(tempPath);
+						ID3v2 id3v2Tag;
+						if (mp3file.hasId3v2Tag()) {
+						  id3v2Tag = mp3file.getId3v2Tag();
+						} else {
+						  // mp3 does not have an ID3v2 tag, let's create one..
+						  id3v2Tag = new ID3v24Tag();
+						  mp3file.setId3v2Tag(id3v2Tag);
+						}
+						
+						id3v2Tag.setAlbumImage(bytes, "image/jpeg");
+						
+						mp3file.save(finalPath);
+						f.delete();
+					}else{
+						f.renameTo(new File(finalPath));
+					}
+					
 					load.writeToHistory("" + t.getId());
 				}
 			}
