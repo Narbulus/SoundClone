@@ -20,6 +20,7 @@ public class DownloadLikes {
 	@SuppressWarnings("unchecked")
 	public static void main(String[] args) throws Exception {
 	
+		@SuppressWarnings("resource")
 		Scanner config = new Scanner(new File("config"));
 		String user = config.nextLine();
 		String downloadPath = config.nextLine();
