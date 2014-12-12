@@ -52,8 +52,7 @@ public class DownloadLikes {
 				URL website = new URL(tStream.getHttp_mp3_128_url());
 				ReadableByteChannel rbc = Channels.newChannel(website.openStream());
 				String fuzzTitle = t.getTitle();
-				fuzzTitle = fuzzTitle.replaceAll("/", "-");
-				fuzzTitle = fuzzTitle.replaceAll(":", "-");
+				fuzzTitle = fuzzTitle.replaceAll("[<>?*:|/]", " ");
 				FileOutputStream fos = new FileOutputStream(downloadPath + "\\" + fuzzTitle + ".mp3");
 				fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
 				fos.close();
