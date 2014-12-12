@@ -43,28 +43,12 @@ public class DownloadLikes {
 		for (int i = 0; i < info.getFavoritesCount(); i += 50) {
 			String partLikes = load.getResponse("http://api.soundcloud.com/users/" + info.getId() + "/favorites.json?client_id=" + clientID + "&offset=" + i);
 			list.addAll((Collection<? extends TrackInfo>) new Gson().fromJson(partLikes, listType));
-		}
-		
-		// Create a new download history file specific to user
-		File f = new File(user);
-		if (!f.exists())
-			f.createNewFile();
-		
-		FileReader reader = new FileReader(user);
-		BufferedReader buffer = new BufferedReader(reader);
-		List<String> history = new ArrayList<String>();
-		String line = null;
-        while ((line = buffer.readLine()) != null) {
-            history.add(line);
-        }
-        buffer.close();
-		
-		PrintStream historyOutput = new PrintStream(new FileOutputStream(user, true)); 
+		} 
 		
 		Gson streams = new Gson();
 		TrackStreams tStream;
 		for (TrackInfo t : list) {
-			if (!history.contains(t.getId())) {
+			if (!load.isInHistory("" + t.getId())) {
 				tStream = streams.fromJson(load.getResponse("https://api.soundcloud.com/i1/tracks/" + t.getId() + "/streams?client_id=" + clientID)
 						, TrackStreams.class);
 				if (tStream.getHttp_mp3_128_url() != null) {
@@ -76,12 +60,12 @@ public class DownloadLikes {
 					FileOutputStream fos = new FileOutputStream(downloadPath + "\\" + fuzzTitle + ".mp3");
 					fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
 					fos.close();
-					historyOutput.println(t.getId());
+					load.writeToHistory("" + t.getId());
 				}
 			}
 		}
 		
-		historyOutput.close();
+		load.closeHistory();
 			
 		
 	}
