@@ -3,7 +3,7 @@ package GsonObjects;
 public class UserInfo {
 
 	private int id;
-	private int public_favorites_count;
+	private int public_favorites_counts;
 	
 	public UserInfo (int id, int public_favorites_count) {
 		this.id = id;
