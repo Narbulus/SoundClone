@@ -12,35 +12,27 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
+import GsonObjects.Configuration;
+
 public class SoundLoader {
 
-	private String user;
-	private String path;
 	private String clientID;
 	
-	private ArrayList<String> history;
-	private PrintStream output;
+	private ArrayList<Integer> history;
+	private Configuration config;
 	
-	public SoundLoader (String user, String path, String clientID) throws IOException {
-		this.user = user;
-		this.path = path;
+	public SoundLoader (Configuration config, String clientID) throws IOException {
 		this.clientID = clientID;
+		this.config = config;
 		
-		// Create a new download history file specific to user
-		File f = new File(user);
-		if (!f.exists())
-			f.createNewFile();
+		history = new ArrayList<Integer>();
 		
-		FileReader reader = new FileReader(user);
-		BufferedReader buffer = new BufferedReader(reader);
-		history = new ArrayList<String>();
-		String line = null;
-        while ((line = buffer.readLine()) != null) {
-            history.add(line);
-        }
-        buffer.close();
+		if (config.getHistory() != null) {
+			for (int i : config.getHistory()) {
+				history.add(i);
+			}
+		}
 		
-		output = new PrintStream(new FileOutputStream(user, true));
 	}
 	
 	public String getResponse(String urlPath) throws Exception {
@@ -68,16 +60,23 @@ public class SoundLoader {
 		return this.clientID;
 	}
 	
-	public boolean isInHistory(String id) {
+	public boolean isInHistory(int id) {
 		return history.contains(id);
 	}
 	
-	public void writeToHistory(String id) {
-		output.println(id);
+	public void writeToHistory(int id) {
+		history.add(id);
 	}
 	
 	public void closeHistory() {
-		output.close();
+		// copy list of history to an array and update the configuration
+		int[] newHistory = new int[history.size()];
+		int p = 0;
+		for (Integer i : history) {
+			newHistory[p] = i;
+		}
+		config.setHistory(newHistory);
+		
 	}
 
 }
