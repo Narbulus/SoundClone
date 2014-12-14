@@ -37,6 +37,15 @@ public class DownloadLikes {
 		String downloadPath = config.nextLine();
 		String clientID = config.nextLine();
 		
+		Mp3File mp3file = new Mp3File("sampletag.mp3");
+		ID3v2 template;
+		if (mp3file.hasId3v2Tag()) {
+		  template = mp3file.getId3v2Tag();
+		}else{
+			template = new ID3v24Tag();
+		}
+		//downloads.generateMp3(mediaPath, downloadPath, track)
+		
 		SoundLoader load = new SoundLoader(user, downloadPath, clientID);
 		
 		String redirect = load.getResponse("http://api.soundcloud.com/resolve.json?url=http://soundcloud.com/" + user
@@ -57,58 +66,15 @@ public class DownloadLikes {
 		
 		Gson streams = new Gson();
 		TrackStreams tStream;
+		Mp3Downloader download = new Mp3Downloader(template);
 		for (TrackInfo t : list) {
 			if (!load.isInHistory("" + t.getId())) {
 				tStream = streams.fromJson(load.getResponse("https://api.soundcloud.com/i1/tracks/" + t.getId() + "/streams?client_id=" + clientID)
 						, TrackStreams.class);
-				if (tStream.getHttp_mp3_128_url() != null) {
-					URL website = new URL(tStream.getHttp_mp3_128_url());
-					ReadableByteChannel rbc = Channels.newChannel(website.openStream());
-					String fuzzTitle = t.getTitle();
-					fuzzTitle = fuzzTitle.replaceAll("[<>?*:|/\\\\]", " ");
-					fuzzTitle = fuzzTitle.replaceAll("\"", "'");
-					String tempPath = downloadPath + "\\%" + fuzzTitle + ".mp3";
-					String finalPath = downloadPath + "\\" + fuzzTitle + ".mp3";
-					FileOutputStream fos = new FileOutputStream(tempPath);
-					fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
-					fos.close();
-					
-					File f = new File(tempPath);
-					
-					if (t.getArtworkURL() != null) {
-						URL artworkURL = new URL(t.getArtworkURL().replace("large", "t500x500"));
-						
-						BufferedImage image = ImageIO.read(artworkURL.openStream());
-						ByteArrayOutputStream out = new ByteArrayOutputStream();
-						ImageIO.write(image, "jpg", out);
-						out.flush();
-						byte[] bytes = out.toByteArray();
-						out.close();
-						
-						OutputStream outs = new FileOutputStream(fuzzTitle + ".jpg");
-						outs.write(bytes);
-						outs.flush();
-						outs.close();
-						
-						Mp3File mp3file = new Mp3File(tempPath);
-						ID3v2 id3v2Tag;
-						if (mp3file.hasId3v2Tag()) {
-						  id3v2Tag = mp3file.getId3v2Tag();
-						} else {
-						  // mp3 does not have an ID3v2 tag, let's create one..
-						  id3v2Tag = new ID3v24Tag();
-						  mp3file.setId3v2Tag(id3v2Tag);
-						}
-						
-						id3v2Tag.setAlbumImage(bytes, "image/jpeg");
-						
-						mp3file.save(finalPath);
-						f.delete();
-					}else{
-						f.renameTo(new File(finalPath));
-					}
-					
-					load.writeToHistory("" + t.getId());
+				String mediaPath = tStream.getHttp_mp3_128_url();
+				if (mediaPath != null) {
+					if (download.generateMp3(mediaPath, downloadPath, t));
+						load.writeToHistory("" + t.getId());
 				}
 			}
 		}
