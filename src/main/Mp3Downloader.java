@@ -5,9 +5,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
-import java.io.RandomAccessFile;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
@@ -21,7 +18,6 @@ import com.mpatric.mp3agic.ID3Wrapper;
 import com.mpatric.mp3agic.ID3v1Tag;
 import com.mpatric.mp3agic.ID3v2;
 import com.mpatric.mp3agic.ID3v23Tag;
-import com.mpatric.mp3agic.ID3v24Tag;
 import com.mpatric.mp3agic.InvalidDataException;
 import com.mpatric.mp3agic.Mp3File;
 import com.mpatric.mp3agic.NotSupportedException;
@@ -98,7 +94,6 @@ public class Mp3Downloader {
 				}
 			}
 			
-			// If available, download and embed album image
 			if (track.getArtworkURL() != null) {
 				URL artworkURL = new URL(track.getArtworkURL().replace("large", "t500x500"));
 				System.out.println(track.getArtworkURL());

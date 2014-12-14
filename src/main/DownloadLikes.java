@@ -24,6 +24,7 @@ public class DownloadLikes {
 		String user = config.nextLine().replace(".", "-");
 		String downloadPath = config.nextLine();
 		String clientID = config.nextLine();
+		int maxDuration = Integer.parseInt(config.nextLine());
 		
 		Configuration currentConfig = null;
 		
@@ -71,15 +72,21 @@ public class DownloadLikes {
 			list.addAll((Collection<? extends TrackInfo>) new Gson().fromJson(partLikes, listType));
 		} 
 		
-		Gson streams = new Gson();
+		Gson gson = new Gson();
 		TrackStreams tStream;
 		Mp3Downloader download = new Mp3Downloader(template, currentConfig);
 		for (TrackInfo t : list) {
-			if (!load.isInHistory(t.getId())) {
-				tStream = streams.fromJson(load.getResponse("https://api.soundcloud.com/i1/tracks/" + t.getId() + "/streams?client_id=" + clientID)
+			if (!load.isInHistory(t.getId()) && t.getDuration() <= maxDuration) {
+				tStream = gson.fromJson(load.getResponse("https://api.soundcloud.com/i1/tracks/" + t.getId() + "/streams?client_id=" + clientID)
 						, TrackStreams.class);
 				String mediaPath = tStream.getHttp_mp3_128_url();
 				if (mediaPath != null) {
+					if (t.getArtworkURL() == null) {
+						// Load uploader profile picture url for track image
+						UserInfo uploader = gson.fromJson(load.getResponse("https://api.soundcloud.com/users/" + t.getUserId() + ".json?client_id=" + clientID )
+								, UserInfo.class);
+						t.setArtworkURL(uploader.getAvatarURL());
+					}
 					if (download.generateMp3(mediaPath, t));
 						load.writeToHistory(t.getId());
 				}
@@ -95,8 +102,8 @@ public class DownloadLikes {
 		output.println(user);
 		output.println(downloadPath);
 		output.println(clientID);
+		output.println(maxDuration);
 		
-		Gson gson = new Gson();
 		for (Configuration c : configs) {
 			output.println(gson.toJson(c));
 		}
