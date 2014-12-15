@@ -27,5 +27,9 @@ public class Configuration {
 	public String getDownloadPath() {
 		return downloadPath;
 	}
+	
+	public void setDownloadPath(String downloadPath) {
+		this.downloadPath = downloadPath;
+	}
 
 }

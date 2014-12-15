@@ -9,6 +9,7 @@ public class TrackInfo {
 	private String artwork_url;
 	private int duration;
 	private int user_id;
+	private boolean download;
 	
 	public TrackInfo (String kind, int id, String title, String stream_url, String artwork_url, int duration, int user_id) {
 		this.kind = kind;
@@ -18,6 +19,7 @@ public class TrackInfo {
 		this.artwork_url = artwork_url;
 		this.duration = duration;
 		this.user_id = user_id;
+		this.download = true;
 	}
 
 	public String getKind() {
@@ -50,6 +52,14 @@ public class TrackInfo {
 	
 	public int getUserId() {
 		return user_id;
+	}
+	
+	public boolean getDownload() {
+		return download;
+	}
+	
+	public void setDownload(boolean download) {
+		this.download = download;
 	}
 	
 	

@@ -56,11 +56,24 @@ public class SoundLoader {
 	}
 	
 	public boolean isInHistory(int id) {
-		return history.contains(id);
+		if (history != null)
+			return history.contains(id);
+		return false;
 	}
 	
 	public void writeToHistory(int id) {
-		history.add(id);
+		if (history != null)
+			history.add(id);
+	}
+	
+	public void clearHistory() {
+		history.clear();
+	}
+	
+	public int getHistoryLength() {
+		if (history == null)
+			return 0;
+		return history.size();
 	}
 	
 	public void closeHistory() {

@@ -27,13 +27,24 @@ public class Mp3Downloader {
 	
 	private ID3v2 template;
 	private Configuration config;
+	private String tempDir;
 
 	public Mp3Downloader(ID3v2 template, Configuration config) {
 		this.template = template;
 		this.config = config;
 		
 		// Create download locations if nonexistant
-		File tempPath = new File(System.getProperty("user.home") + "/Appdata/Local/SoundClone/" 
+		String workingDirectory;
+		String OS = (System.getProperty("os.name")).toUpperCase();
+		if (OS.contains("WIN"))
+		{
+		    workingDirectory = System.getenv("AppData") + "/Local";
+		} else {
+		    workingDirectory = System.getProperty("user.home");
+		    workingDirectory += "/Library/Application Support";
+		}
+		
+		File tempPath = new File(workingDirectory + "/SoundClone/" 
 					+ config.getUsername());
 		File realPath = new File(config.getDownloadPath() + "/" + config.getUsername());
 		tempPath.mkdirs();
@@ -96,7 +107,7 @@ public class Mp3Downloader {
 			
 			if (track.getArtworkURL() != null) {
 				URL artworkURL = new URL(track.getArtworkURL().replace("large", "t500x500"));
-				System.out.println(track.getArtworkURL());
+				
 				BufferedImage image = ImageIO.read(artworkURL.openStream());
 				ByteArrayOutputStream out = new ByteArrayOutputStream();
 				ImageIO.write(image, "jpg", out);
