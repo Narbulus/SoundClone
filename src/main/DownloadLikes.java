@@ -40,6 +40,7 @@ public class DownloadLikes {
 	private SoundLoader load;
 	private Boolean threadRunning;
 	private String tempDir;
+	private String defaultDownload;
 	
 	public DownloadLikes() throws Exception {
 		// Create download locations if nonexistant
@@ -57,6 +58,8 @@ public class DownloadLikes {
 		
 		File tempFile = new File(tempDir);
 		tempFile.mkdirs();
+		
+		defaultDownload = System.getProperty("user.home");
 		
 		threadRunning = false;
 		BufferedReader reader = new BufferedReader(new InputStreamReader(getClass().getResourceAsStream("/resources/config")));
@@ -101,6 +104,7 @@ public class DownloadLikes {
 	/**
 	 * Called when the user either enters or selects a new
 	 * user to be loaded. Loads the tracklist for the user
+	 * 
 	 * @param user The new user's username
 	 * @param gui 
 	 * @throws Exception 
@@ -114,7 +118,7 @@ public class DownloadLikes {
 		}
 		
 		if (currentConfig == null || user != currentConfig.getUsername()) {
-			currentConfig = new Configuration(user, null, null);
+			currentConfig = new Configuration(user, defaultDownload, null);
 			configs.add(currentConfig);
 		}
 		
@@ -201,7 +205,7 @@ public class DownloadLikes {
 	 */
 	public void downloadTracks(String user, String downloadPath, final SoundCloneGUI gui) throws JsonSyntaxException, Exception {
 		// If a new path is specified, clear history on config so new files are downloaded
-		if (!downloadPath.equals(currentConfig.getDownloadPath())) {
+		if (user.equals(currentConfig.getUsername()) && !downloadPath.equals(currentConfig.getDownloadPath())) {
 			currentConfig.setDownloadPath(downloadPath);
 			load.clearHistory();
 		}
@@ -293,7 +297,7 @@ public class DownloadLikes {
 	 */
 	public boolean isNewPath(String downloadPath) {
 		// If a new path is specified, clear history on config so new files are downloaded
-		return !downloadPath.equals(currentConfig.getDownloadPath());
+		return !downloadPath.equals(currentConfig.getDownloadPath()) && load.getHistoryLength() > 0;
 	}
 	/**
 	 * Returns the names of the users for which a
@@ -323,7 +327,7 @@ public class DownloadLikes {
 	public String getDownloadPath() {
 		if (currentConfig != null)
 			return currentConfig.getDownloadPath();
-		return null;
+		return defaultDownload;
 	}
 	
 	public Boolean isThreadRunning() {

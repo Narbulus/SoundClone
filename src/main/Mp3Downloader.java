@@ -69,7 +69,7 @@ public class Mp3Downloader {
 			String tempPath = tempDir + "/" + fuzzTitle + ".mp3";
 			String finalPath = config.getDownloadPath() + "/" + config.getUsername() + "/" + fuzzTitle + ".mp3";
 			File finalDir = new File(finalPath);
-			finalDir.mkdirs();
+			finalDir.getParentFile().mkdirs();
 			FileOutputStream fos = new FileOutputStream(tempPath);
 			fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
 			fos.close();

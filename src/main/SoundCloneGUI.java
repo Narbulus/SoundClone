@@ -101,9 +101,9 @@ public class SoundCloneGUI {
 		SimpleAttributeSet warning = new SimpleAttributeSet();
 		StyleConstants.setForeground(warning, Color.red);
 		SimpleAttributeSet complete = new SimpleAttributeSet();
-		StyleConstants.setForeground(complete, Color.green);
+		StyleConstants.setForeground(complete, new Color(0, 104, 20));
 		SimpleAttributeSet process = new SimpleAttributeSet();
-		StyleConstants.setForeground(complete, Color.black);
+		StyleConstants.setForeground(process, Color.black);
 		StyleConstants.setItalic(process, true);
 		
 		statusTypes = new HashMap<StatusType, SimpleAttributeSet>();
@@ -177,6 +177,8 @@ public class SoundCloneGUI {
 		        return String.class;
 		    }
 		});
+		table.getTableHeader().setResizingAllowed(false);
+		table.getTableHeader().setReorderingAllowed(false);
 		
 		comboBox = new JComboBox(downloader.getConfigNames());
 		comboBox.setBounds(22, 44, 169, 20);
@@ -290,6 +292,8 @@ public class SoundCloneGUI {
 			@Override
 			public void tableChanged(TableModelEvent e) {
 				onTableChanged(e);
+				table.getColumn("Duration").setMaxWidth((int) (table.getWidth() * 0.2));
+				table.getColumn("Download").setMaxWidth((int) (table.getWidth() * 0.2));
 			}
 			
 		});
@@ -328,7 +332,8 @@ public class SoundCloneGUI {
 		if (downloader != null && !downloader.isThreadRunning() && !locked) {
 			if (comboBox.getSelectedItem() != null && downloadPath.getText() != null) {
 				if (downloader.isNewPath(downloadPath.getText()) && start.getText().equals("Download")) {
-					updateStatus("New path differs from last download path used with this username. Re-download files to new directory?");
+					updateStatus("New path differs from last download path used with this username. Re-download files to new directory?"
+							, StatusType.WARNING);
 					start.setText("Continue");
 				}else{
 					lockControls();
