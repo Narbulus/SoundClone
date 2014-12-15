@@ -1,30 +1,33 @@
 package main;
 
+import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.PrintStream;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Scanner;
 import java.util.concurrent.ExecutionException;
-import java.io.*;
-import java.lang.reflect.Type;
 
-import javax.swing.JLabel;
-import javax.swing.JTextArea;
 import javax.swing.SwingWorker;
-import javax.swing.table.DefaultTableModel;
 import javax.swing.text.BadLocationException;
 
-import GsonObjects.*;
+import GsonObjects.Configuration;
+import GsonObjects.RedirectResponse;
+import GsonObjects.TrackInfo;
+import GsonObjects.TrackStreams;
+import GsonObjects.UserInfo;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
 import com.mpatric.mp3agic.ID3v2;
-import com.mpatric.mp3agic.ID3v24Tag;
-import com.mpatric.mp3agic.InvalidDataException;
-import com.mpatric.mp3agic.Mp3File;
-import com.mpatric.mp3agic.UnsupportedTagException;
+import com.mpatric.mp3agic.ID3v22Tag;
 
 public class DownloadLikes {
 
@@ -36,11 +39,33 @@ public class DownloadLikes {
 	private ID3v2 template;
 	private SoundLoader load;
 	private Boolean threadRunning;
+	private String tempDir;
 	
 	public DownloadLikes() throws Exception {
+		// Create download locations if nonexistant
+		String workingDirectory;
+		String OS = (System.getProperty("os.name")).toUpperCase();
+		if (OS.contains("WIN"))
+		{
+		    workingDirectory = System.getenv("AppData");
+		} else {
+		    workingDirectory = System.getProperty("user.home");
+		    workingDirectory += "/Library/Application Support";
+		}
+		
+		tempDir = workingDirectory + "/SoundClone";
+		
+		File tempFile = new File(tempDir);
+		tempFile.mkdirs();
+		
 		threadRunning = false;
-		@SuppressWarnings("resource")
-		Scanner config = new Scanner(new File("config"));
+		BufferedReader reader = new BufferedReader(new InputStreamReader(getClass().getResourceAsStream("/resources/config")));
+		File oldConfig = new File(tempDir + "/config");
+		Scanner config;
+		if (oldConfig.exists())
+			config = new Scanner(oldConfig);
+		else
+			config = new Scanner(reader);
 		clientID = config.nextLine();
 		maxDuration = Integer.parseInt(config.nextLine());
 		
@@ -53,6 +78,24 @@ public class DownloadLikes {
 			Configuration newConfig = new Gson().fromJson(nextConfig, Configuration.class);
 			configs.add(newConfig);
 		}
+		
+		config.close();
+
+		// Load the template id3 tag from resource file
+		InputStream is = getClass().getResourceAsStream("/resources/tagdata");
+		ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+
+		int nRead;
+		byte[] data = new byte[16384];
+
+		while ((nRead = is.read(data, 0, data.length)) != -1) {
+		  buffer.write(data, 0, nRead);
+		}
+
+		buffer.flush();
+
+		template = new ID3v22Tag(buffer.toByteArray());
+		
 	}
 	
 	/**
@@ -75,19 +118,6 @@ public class DownloadLikes {
 			configs.add(currentConfig);
 		}
 		
-		// Strip the id3 tag from the template mp3
-		Mp3File mp3file = null;
-		try {
-			mp3file = new Mp3File("sampletag.mp3");
-			if (mp3file.hasId3v2Tag()) {
-			  template = mp3file.getId3v2Tag();
-			}else{
-				template = new ID3v24Tag();
-			}
-		} catch (UnsupportedTagException | InvalidDataException | IOException e) {
-			e.printStackTrace();
-		}
-		
 		try {
 			load = new SoundLoader(currentConfig, clientID);
 		} catch (IOException e) {
@@ -99,6 +129,7 @@ public class DownloadLikes {
 		// Dispatch worker to download songs in background and update status
 		SwingWorker<String, String> worker = new SwingWorker<String, String>() {
 
+			@SuppressWarnings("unchecked")
 			@Override
 			protected String doInBackground() throws JsonSyntaxException, Exception {
 				String redirect = "";
@@ -182,7 +213,7 @@ public class DownloadLikes {
 			protected String doInBackground() throws Exception {
 				Gson gson = new Gson();
 				TrackStreams tStream;
-				Mp3Downloader download = new Mp3Downloader(template, currentConfig);
+				Mp3Downloader download = new Mp3Downloader(template, currentConfig, tempDir);
 				int i = 1;
 				int downloads = 0;
 				for (TrackInfo t : likes) {
@@ -213,7 +244,7 @@ public class DownloadLikes {
 				load.closeHistory();
 				
 				// write the configurations to file
-				PrintStream output = new PrintStream(new File("config"));
+				PrintStream output = new PrintStream(tempDir + "/config");
 				
 				output.println(clientID);
 				output.println(maxDuration);
@@ -222,6 +253,7 @@ public class DownloadLikes {
 					output.println(gson.toJson(c));
 				}
 				
+				output.flush();
 				output.close();
 				return downloads + " songs downloaded successfully!";
 			}

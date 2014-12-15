@@ -34,6 +34,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.awt.Toolkit;
+import javax.swing.UIManager;
 
 
 public class SoundCloneGUI {
@@ -41,7 +43,7 @@ public class SoundCloneGUI {
 	private final int TOGGLE_INDEX = 2;
 	private final String[] columnNames = { "Name", "Duration", "Download" };
 
-	private JFrame frame;
+	private JFrame frmSoundclone;
 	private JTextField downloadPath;
 	private JComboBox comboBox;
 	private JTextPane status;
@@ -73,7 +75,7 @@ public class SoundCloneGUI {
 			public void run() {
 				try {
 					SoundCloneGUI window = new SoundCloneGUI();
-					window.frame.setVisible(true);
+					window.frmSoundclone.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -110,23 +112,25 @@ public class SoundCloneGUI {
 		statusTypes.put(StatusType.WARNING, warning);
 		statusTypes.put(StatusType.PROCESS, process);
 		
-		frame = new JFrame();
-		frame.setResizable(false);
-		frame.setBounds(100, 100, 600, 421);
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		frame.getContentPane().setLayout(null);
+		frmSoundclone = new JFrame();
+		frmSoundclone.setIconImage(Toolkit.getDefaultToolkit().getImage(SoundCloneGUI.class.getResource("/com/sun/java/swing/plaf/windows/icons/FloppyDrive.gif")));
+		frmSoundclone.setTitle("SoundClone");
+		frmSoundclone.setResizable(false);
+		frmSoundclone.setBounds(100, 100, 591, 421);
+		frmSoundclone.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		frmSoundclone.getContentPane().setLayout(null);
 		
 		status = new JTextPane();
 		status.setBounds(22, 85, 347, 67);
-		status.setBackground(SystemColor.controlHighlight);
+		status.setBackground(new Color(211, 211, 211));
 		status.setFont(new Font("Tahoma", Font.PLAIN, 12));
 		status.setEditable(false);
-		frame.getContentPane().add(status);
+		frmSoundclone.getContentPane().add(status);
 		
 		downloadPath = new JTextField(downloader.getDownloadPath());
 		downloadPath.setBounds(212, 44, 259, 20);
 		downloadPath.setHorizontalAlignment(SwingConstants.CENTER);
-		frame.getContentPane().add(downloadPath);
+		frmSoundclone.getContentPane().add(downloadPath);
 		downloadPath.setColumns(10);
 		
 		//JScrollPane scrollPane = new JScrollPane(table);
@@ -150,11 +154,11 @@ public class SoundCloneGUI {
 				}
 			}
 		});
-		frame.getContentPane().add(start);
+		frmSoundclone.getContentPane().add(start);
 		
 		JScrollPane scrollPane = new JScrollPane();
 		scrollPane.setBounds(22, 171, 543, 164);
-		frame.getContentPane().add(scrollPane);
+		frmSoundclone.getContentPane().add(scrollPane);
 		
 		table = new JTable(null, columnNames);
 		scrollPane.setViewportView(table);
@@ -187,7 +191,7 @@ public class SoundCloneGUI {
 				}
 			}
 		});
-		frame.getContentPane().add(comboBox);
+		frmSoundclone.getContentPane().add(comboBox);
 		
 		// Try to initially update downloader with initial config
 		try {
@@ -197,18 +201,18 @@ public class SoundCloneGUI {
 		}
 		
 		JLabel lblNewLabel = new JLabel("Username");
-		lblNewLabel.setBounds(88, 19, 74, 14);
-		frame.getContentPane().add(lblNewLabel);
+		lblNewLabel.setBounds(70, 19, 74, 14);
+		frmSoundclone.getContentPane().add(lblNewLabel);
 		
 		JLabel lblDownload = new JLabel("Destination");
-		lblDownload.setBounds(307, 19, 64, 14);
+		lblDownload.setBounds(212, 19, 259, 14);
 		lblDownload.setHorizontalAlignment(SwingConstants.CENTER);
-		frame.getContentPane().add(lblDownload);
+		frmSoundclone.getContentPane().add(lblDownload);
 		
 		separator = new JSeparator();
 		separator.setBounds(201, 11, 46, 60);
 		separator.setOrientation(SwingConstants.VERTICAL);
-		frame.getContentPane().add(separator);
+		frmSoundclone.getContentPane().add(separator);
 		
 		fileChoose = new JFileChooser(downloadPath.getText());
 		fileChoose.setAcceptAllFileFilterUsed(false);
@@ -224,7 +228,7 @@ public class SoundCloneGUI {
 			}
 			
 		});
-		frame.getContentPane().add(btnBrowse);
+		frmSoundclone.getContentPane().add(btnBrowse);
 		
 		btnNewButton = new JButton("Select All");
 		btnNewButton.addActionListener(new ActionListener() {
@@ -235,7 +239,7 @@ public class SoundCloneGUI {
 			}
 		});
 		btnNewButton.setBounds(345, 357, 96, 23);
-		frame.getContentPane().add(btnNewButton);
+		frmSoundclone.getContentPane().add(btnNewButton);
 		
 		button = new JButton("Deselect All");
 		button.addActionListener(new ActionListener() {
@@ -246,12 +250,12 @@ public class SoundCloneGUI {
 			}
 		});
 		button.setBounds(451, 357, 113, 23);
-		frame.getContentPane().add(button);
+		frmSoundclone.getContentPane().add(button);
 		
 		lblNewLabel_1 = new JLabel("Narbulus - 2014");
 		lblNewLabel_1.setForeground(SystemColor.textInactiveText);
 		lblNewLabel_1.setBounds(32, 361, 130, 14);
-		frame.getContentPane().add(lblNewLabel_1);
+		frmSoundclone.getContentPane().add(lblNewLabel_1);
 		
 		btnNewButton_1 = new JButton("Open Download Location");
 		btnNewButton_1.setBounds(137, 357, 198, 23);
@@ -260,8 +264,17 @@ public class SoundCloneGUI {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				try {
-					Desktop.getDesktop().open(new File(downloadPath.getText()));
-				} catch (IOException e1) {
+					File pathRoot = new File(downloadPath.getText());
+					File pathMain = new File(downloadPath.getText() + "/" + ((String)comboBox.getSelectedItem()));
+					
+					if (pathMain.exists()) {
+						Desktop.getDesktop().open(pathMain);
+					}else if (pathRoot.exists()) {
+						Desktop.getDesktop().open(pathRoot);
+					}else{
+						updateStatus("Download path doesn't exists", StatusType.WARNING);
+					}
+				} catch (IOException | BadLocationException e1) {
 					try {
 						updateStatus("Download path doesn't exist");
 					} catch (BadLocationException e2) {
@@ -271,7 +284,7 @@ public class SoundCloneGUI {
 			}
 			
 		});
-		frame.getContentPane().add(btnNewButton_1);
+		frmSoundclone.getContentPane().add(btnNewButton_1);
 		table.getModel().addTableModelListener(new TableModelListener() {
 
 			@Override
@@ -285,7 +298,7 @@ public class SoundCloneGUI {
 	
 	private void browseDownloadPath(ActionEvent e) {
 		//Handle open button action.
-		int returnVal = fileChoose.showOpenDialog(frame.getContentPane());
+		int returnVal = fileChoose.showOpenDialog(frmSoundclone.getContentPane());
  
 		if (returnVal == JFileChooser.APPROVE_OPTION) {
         	File file = fileChoose.getSelectedFile();

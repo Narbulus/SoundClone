@@ -17,6 +17,7 @@ import GsonObjects.TrackInfo;
 import com.mpatric.mp3agic.ID3Wrapper;
 import com.mpatric.mp3agic.ID3v1Tag;
 import com.mpatric.mp3agic.ID3v2;
+import com.mpatric.mp3agic.ID3v22Tag;
 import com.mpatric.mp3agic.ID3v23Tag;
 import com.mpatric.mp3agic.InvalidDataException;
 import com.mpatric.mp3agic.Mp3File;
@@ -29,27 +30,10 @@ public class Mp3Downloader {
 	private Configuration config;
 	private String tempDir;
 
-	public Mp3Downloader(ID3v2 template, Configuration config) {
+	public Mp3Downloader(ID3v2 template, Configuration config, String tempDir) {
 		this.template = template;
 		this.config = config;
-		
-		// Create download locations if nonexistant
-		String workingDirectory;
-		String OS = (System.getProperty("os.name")).toUpperCase();
-		if (OS.contains("WIN"))
-		{
-		    workingDirectory = System.getenv("AppData") + "/Local";
-		} else {
-		    workingDirectory = System.getProperty("user.home");
-		    workingDirectory += "/Library/Application Support";
-		}
-		
-		File tempPath = new File(workingDirectory + "/SoundClone/" 
-					+ config.getUsername());
-		File realPath = new File(config.getDownloadPath() + "/" + config.getUsername());
-		tempPath.mkdirs();
-		realPath.mkdirs();
-		
+		this.tempDir = tempDir;
 	}
 	
 	/**
@@ -82,9 +66,10 @@ public class Mp3Downloader {
 			String fuzzTitle = track.getTitle();
 			fuzzTitle = fuzzTitle.replaceAll("[<>?*:|/\\\\]", " ");
 			fuzzTitle = fuzzTitle.replaceAll("\"", "'");
-			String tempPath = System.getProperty("user.home") + "\\Appdata\\Local\\SoundClone\\" 
-					+ config.getUsername() + "\\" + fuzzTitle + ".mp3";
-			String finalPath = config.getDownloadPath() + "\\" + config.getUsername() + "\\" + fuzzTitle + ".mp3";
+			String tempPath = tempDir + "/" + fuzzTitle + ".mp3";
+			String finalPath = config.getDownloadPath() + "/" + config.getUsername() + "/" + fuzzTitle + ".mp3";
+			File finalDir = new File(finalPath);
+			finalDir.mkdirs();
 			FileOutputStream fos = new FileOutputStream(tempPath);
 			fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
 			fos.close();
