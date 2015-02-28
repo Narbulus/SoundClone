@@ -1,41 +1,36 @@
 package main;
+import java.awt.Color;
+import java.awt.Desktop;
 import java.awt.EventQueue;
+import java.awt.Font;
+import java.awt.SystemColor;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
+import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
-import javax.swing.JScrollPane;
-import javax.swing.JTextPane;
-import javax.swing.JTextField;
-import javax.swing.JComboBox;
 import javax.swing.JLabel;
-import javax.swing.SwingConstants;
-import javax.swing.JButton;
-
-import com.google.gson.JsonSyntaxException;
-
-import java.awt.Desktop;
-import java.awt.Font;
-import java.awt.Color;
-
-import javax.swing.JList;
+import javax.swing.JScrollPane;
+import javax.swing.JSeparator;
 import javax.swing.JTable;
+import javax.swing.JTextField;
+import javax.swing.JTextPane;
+import javax.swing.SwingConstants;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
-import javax.swing.JSeparator;
 
-import java.awt.SystemColor;
-import java.io.File;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-import java.awt.Toolkit;
-import javax.swing.UIManager;
+import com.google.gson.JsonSyntaxException;
 
 
 public class SoundCloneGUI {

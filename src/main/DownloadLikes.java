@@ -29,6 +29,12 @@ import com.google.gson.reflect.TypeToken;
 import com.mpatric.mp3agic.ID3v2;
 import com.mpatric.mp3agic.ID3v22Tag;
 
+/**
+ * Communicates with the GUI and dispatches mp3 downloader's
+ * to handle the individual downloading of songs.
+ * @author Spencer Anderson
+ *
+ */
 public class DownloadLikes {
 
 	private String clientID;
@@ -106,7 +112,7 @@ public class DownloadLikes {
 	 * user to be loaded. Loads the tracklist for the user
 	 * 
 	 * @param user The new user's username
-	 * @param gui 
+	 * @param gui A reference to the GUI object
 	 * @throws Exception 
 	 * @throws JsonSyntaxException 
 	 * @return Returns a new status for the program
