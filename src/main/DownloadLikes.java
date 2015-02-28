@@ -169,6 +169,8 @@ public class DownloadLikes {
 				for (TrackInfo t : likes) {
 					if (load.isInHistory(t.getId()) || t.getDuration() > maxDuration)
 						t.setDownload(false);
+					else
+						t.setDownload(true);
 				}
 				
 				int diff = (likes.size() - load.getHistoryLength());
